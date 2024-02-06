@@ -3,7 +3,6 @@ package compressService
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -30,7 +29,7 @@ func compressGIF(sourceGifPath string, targetSize int64) ([]byte, error) {
 	sourceSize := sourceGifFile.Size()
 
 	if sourceSize < targetSize {
-		fileData, err := ioutil.ReadFile(sourceGifPath)
+		fileData, err := os.ReadFile(sourceGifPath)
 		if err != nil {
 			return nil, errors.New(fmt.Sprintf("警告：源gif文件小于目标大小，不做处理,复制文件失败 %s %v", sourceGifPath, err))
 		}
@@ -79,7 +78,7 @@ func compressGIF(sourceGifPath string, targetSize int64) ([]byte, error) {
 			colorNum = colorNum + metaColor
 		}
 	}
-	fileData, err := ioutil.ReadFile(Out)
+	fileData, err := os.ReadFile(Out)
 	if err != nil {
 		return nil, err
 	}

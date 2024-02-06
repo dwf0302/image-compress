@@ -21,17 +21,18 @@ func ImageCompress(c *gin.Context) {
 	fmt.Println("文本数据:", size)
 
 	dst := filepath.Join("./temp", file.Filename)
+	fileAbs, err := filepath.Abs(dst)
 
-	if err := c.SaveUploadedFile(file, dst); err != nil {
+	fmt.Println("绝对路径=" + fileAbs)
+	if err := c.SaveUploadedFile(file, fileAbs); err != nil {
 		c.String(http.StatusInternalServerError, fmt.Sprintf("文件上传错误: %s", err.Error()))
 		return
 	}
 	defer func() {
-		if err := os.Remove(dst); err != nil {
-			log.Println("警告：删除临时文件失败", dst)
+		if err := os.Remove(fileAbs); err != nil {
+			log.Println("警告：删除临时文件失败", fileAbs)
 		}
 	}()
-
 	targetSize, err := strconv.ParseInt(size, 10, 64)
 	if err != nil {
 		log.Println(err)
@@ -41,13 +42,13 @@ func ImageCompress(c *gin.Context) {
 	targetSize = targetSize * 1000
 	switch strings.ToLower(filepath.Ext(file.Filename)) {
 	case ".png":
-		data, err := compressPNG(dst, targetSize)
+		data, err := compressPNG(fileAbs, targetSize)
 		handleCompressionResult(c, err, data, "image/png")
 	case ".jpg", ".jpeg":
-		data, err := compressJPG(dst, targetSize)
+		data, err := compressJPG(fileAbs, targetSize)
 		handleCompressionResult(c, err, data, "image/jpeg")
 	case ".gif":
-		data, err := compressGIF(dst, targetSize)
+		data, err := compressGIF(fileAbs, targetSize)
 		handleCompressionResult(c, err, data, "image/gif")
 	default:
 		log.Println("不支持的文件类型:", filepath.Ext(file.Filename))
