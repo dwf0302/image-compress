@@ -94,7 +94,7 @@ func compressJPG(sourcePath string, targetSizeKB int64) ([]byte, error) {
 		}
 
 		// 减少压缩质量，继续尝试
-		quality--
+		quality = quality - 5
 	}
 	return nil, fmt.Errorf("failed to compress JPG image to %d KB", targetSizeKB)
 }
