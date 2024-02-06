@@ -6,8 +6,6 @@ import (
 	"os/exec"
 )
 
-const pngquant = "/Users/devin/Documents/Weifeng/code/go/src/utils/bin/pngquant-linux"
-
 func compressPNG(sourcePath string, targetSizeKB int64) ([]byte, error) {
 	// 初始压缩质量
 	quality := 95

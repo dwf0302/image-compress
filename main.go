@@ -20,7 +20,7 @@ func main() {
 		c.HTML(http.StatusOK, "index.html", gin.H{
 			"title": "index",
 			// 可以在 HTML 模板中使用这些数据
-			"imageURL": "/static/2178859284299776000.heic", // 静态文件的路径
+			//"imageURL": "/static/2178859284299776000.heic", // 静态文件的路径
 		})
 	})
 	// 设置路由处理器，处理文件上传请求

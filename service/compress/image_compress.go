@@ -17,22 +17,12 @@ func ImageCompress(c *gin.Context) {
 		c.String(http.StatusBadRequest, fmt.Sprintf("表单解析错误: %s", err.Error()))
 		return
 	}
-	size := c.PostForm("size")
-	fmt.Println("文本数据:", size)
-
-	dst := filepath.Join("./temp", file.Filename)
-	fileAbs, err := filepath.Abs(dst)
-
-	fmt.Println("绝对路径=" + fileAbs)
-	if err := c.SaveUploadedFile(file, fileAbs); err != nil {
-		c.String(http.StatusInternalServerError, fmt.Sprintf("文件上传错误: %s", err.Error()))
+	if file.Size > 10*1024*1024 {
+		c.String(http.StatusBadRequest, fmt.Sprintf("文件大小不允许超过10M: %s", err.Error()))
 		return
 	}
-	defer func() {
-		if err := os.Remove(fileAbs); err != nil {
-			log.Println("警告：删除临时文件失败", fileAbs)
-		}
-	}()
+	size := c.PostForm("size")
+	fmt.Println("期望压缩后的文本大小:", size)
 	targetSize, err := strconv.ParseInt(size, 10, 64)
 	if err != nil {
 		log.Println(err)
@@ -40,6 +30,26 @@ func ImageCompress(c *gin.Context) {
 		return
 	}
 	targetSize = targetSize * 1000
+	if targetSize >= file.Size {
+		c.String(http.StatusBadRequest, fmt.Sprintf("期望压缩后的文本大小大于文件大小: %s", err.Error()))
+		return
+	}
+	fileAbs, err := filepath.Abs(filepath.Join("./temp", file.Filename))
+	if err != nil {
+		c.String(http.StatusInternalServerError, fmt.Sprintf("获取文件绝对路径失败: %s", err.Error()))
+		return
+	}
+	fmt.Println("绝对路径=" + fileAbs)
+	if err := c.SaveUploadedFile(file, fileAbs); err != nil {
+		c.String(http.StatusInternalServerError, fmt.Sprintf("临时文件上传错误: %s", err.Error()))
+		return
+	}
+	defer func() {
+		if err := os.Remove(fileAbs); err != nil {
+			log.Println("警告：删除临时文件失败", fileAbs)
+		}
+	}()
+
 	switch strings.ToLower(filepath.Ext(file.Filename)) {
 	case ".png":
 		data, err := compressPNG(fileAbs, targetSize)
